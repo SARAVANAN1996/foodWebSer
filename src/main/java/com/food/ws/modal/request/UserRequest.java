@@ -1,10 +1,13 @@
 package com.food.ws.modal.request;
 
+import java.util.List;
+
 public class UserRequest {
 	
 	private String userName;
 	private String password;
 	private String email;
+	private List<AddressRequestModel> addresses;
 	
 	
 	public String getEmail() {
@@ -24,6 +27,12 @@ public class UserRequest {
 	}
 	public void setPassword(String password) {
 		this.password = password;
+	}
+	public List<AddressRequestModel> getAddresses() {
+		return addresses;
+	}
+	public void setAddresses(List<AddressRequestModel> addresses) {
+		this.addresses = addresses;
 	}
 	
 }

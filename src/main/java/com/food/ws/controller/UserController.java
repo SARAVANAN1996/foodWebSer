@@ -1,8 +1,11 @@
 package com.food.ws.controller;
 
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.modelmapper.ModelMapper;
+import org.modelmapper.TypeToken;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
@@ -17,14 +20,17 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.food.ws.shared.dto.AddressDTO;
 import com.food.ws.shared.dto.UserDto;
 import com.food.ws.Exception.UserServiceException;
 import com.food.ws.modal.request.UserRequest;
+import com.food.ws.modal.response.AddressRest;
 import com.food.ws.modal.response.ErrorMessages;
 import com.food.ws.modal.response.OperationStatusModel;
 import com.food.ws.modal.response.RequestOperationName;
 import com.food.ws.modal.response.RequestOperationStatus;
 import com.food.ws.modal.response.UserResponse;
+import com.food.ws.service.AddressService;
 import com.food.ws.service.UserService;
 
 @RestController
@@ -34,6 +40,9 @@ public class UserController {
 	
 	@Autowired
 	UserService userService;
+	
+	@Autowired 
+	AddressService addressService;
 	
 	
 	
@@ -54,18 +63,28 @@ public class UserController {
 			produces= {MediaType.APPLICATION_XML_VALUE, MediaType.APPLICATION_JSON_VALUE} )
 	public UserResponse newUser(@RequestBody UserRequest usrReq) throws Exception{
 		
-		UserResponse usrRes = new UserResponse();
-		
+		try {
 		//if( usrReq.getUsername().isEmpty()) throw new UserServiceException(ErrorMessages.MISSING_REQUIRED_FIELD.getErrorMessage());
 		if( usrReq.getUsername().isEmpty()) throw new NullPointerException("The Object is null");
 		
-		UserDto usrDto = new UserDto();
-		BeanUtils.copyProperties(usrReq, usrDto);
+		//UserDto usrDto = new UserDto();
+		//BeanUtils.copyProperties(usrReq, usrDto);
+		
+		ModelMapper modelMapper = new ModelMapper();
+		UserDto usrDto = modelMapper.map(usrReq, UserDto.class);
 		
 		UserDto createdUsr = userService.newUser(usrDto);
-		BeanUtils.copyProperties(createdUsr,usrRes);
+		
+		UserResponse usrRes = modelMapper.map(createdUsr, UserResponse.class);
+	//	BeanUtils.copyProperties(createdUsr,usrRes);
 		
 		return usrRes;
+		
+		}
+		catch(Exception e) {
+			System.out.println(e);
+		}
+		return null;
 	}
 	
 	
@@ -125,6 +144,34 @@ public class UserController {
 		}
 	 
 		return returnValue;
+	}
+	
+	@GetMapping(path="/{id}/addresses",
+			produces= {MediaType.APPLICATION_XML_VALUE, MediaType.APPLICATION_JSON_VALUE})
+	public List<AddressRest> getUserAddresses(@PathVariable String id){
+		
+		List<AddressRest> returnValue = new ArrayList();
+		
+		List<AddressDTO> addressesDto = addressService.getaddresses(id);
+		
+		if(addressesDto != null && !addressesDto.isEmpty()) {
+			
+			java.lang.reflect.Type listType = new TypeToken<List<AddressRest>>() {}.getType();
+			returnValue = new ModelMapper().map(addressesDto, listType);
+		}
+		
+		return returnValue;
+	}
+	
+	@GetMapping(path="/{id}/addresses/{addressId}",
+			produces= {MediaType.APPLICATION_XML_VALUE, MediaType.APPLICATION_JSON_VALUE})
+	public AddressRest getUserAddress(@PathVariable String addressId){
+		
+        ModelMapper modelMapper = new ModelMapper();
+        
+		AddressDTO addressesDto = addressService.getaddress(addressId); 
+		
+		return modelMapper.map(addressesDto, AddressRest.class );
 	}
 //	
 //	@PostMapping("/users/login")

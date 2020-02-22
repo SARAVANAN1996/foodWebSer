@@ -1,10 +1,13 @@
 package com.food.ws.modal.response;
 
+import java.util.List;
+
 public class UserResponse {
 	
 	private String userId;
 	private String userName;
 	private String email;
+	private List<AddressRest> addresses;
 	
 	
 	public String getUsername() {
@@ -24,6 +27,12 @@ public class UserResponse {
 	}
 	public void setUserId(String userId) {
 		this.userId = userId;
+	}
+	public List<AddressRest> getAddresses() {
+		return addresses;
+	}
+	public void setAddresses(List<AddressRest> addresses) {
+		this.addresses = addresses;
 	}
 
 

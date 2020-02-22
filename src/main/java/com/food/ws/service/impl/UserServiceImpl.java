@@ -3,6 +3,7 @@ package com.food.ws.service.impl;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.modelmapper.ModelMapper;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -15,6 +16,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.food.ws.shared.Utils;
+import com.food.ws.shared.dto.AddressDTO;
 import com.food.ws.shared.dto.UserDto;
 import com.food.ws.Exception.UserServiceException;
 import com.food.ws.entity.UserEntity;
@@ -39,8 +41,17 @@ public class UserServiceImpl implements UserService {
 		
 		if(usrRpr.findByEmail(user.getEmail()) !=null) throw new RuntimeException("Record already exits"); 
 		
-		UserEntity usrEntity = new UserEntity();
-		BeanUtils.copyProperties(user, usrEntity);
+		for(int i=0; i<user.getAddresses().size();i++) {
+			AddressDTO addressDto = user.getAddresses().get(i);
+			addressDto.setUserDetails(user);
+			addressDto.setAddressId(utils.generateAddressId(30));
+			user.getAddresses().set(i, addressDto);
+		}
+		
+		ModelMapper modelMapper = new ModelMapper();
+		//UserEntity usrEntity = new UserEntity();
+		//BeanUtils.copyProperties(user, usrEntity);
+		UserEntity usrEntity = modelMapper.map(user, UserEntity.class);
 		
 		String publicId = utils.generateUserId(30);
 		usrEntity.setUserId(publicId);
@@ -48,8 +59,9 @@ public class UserServiceImpl implements UserService {
 		
 		UserEntity saveEntity = usrRpr.save(usrEntity);
 		
-		UserDto returnValue = new UserDto();
-		BeanUtils.copyProperties(saveEntity, returnValue);
+		//UserDto returnValue = new UserDto();
+		//BeanUtils.copyProperties(saveEntity, returnValue);
+		UserDto returnValue  = modelMapper.map(saveEntity, UserDto.class);
 		
 		return returnValue;
 	}
